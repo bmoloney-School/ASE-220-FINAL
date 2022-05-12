@@ -50,9 +50,41 @@ GET http://localhost:8080/api/categories
 
 ###
 
-PATCH http://localhost:8080/api/podcasts/Test+6/actions/like
+PATCH http://localhost:8080/api/podcasts/Test+4/actions/like
 Content-Type: application/json
 
 {
     "userId" : "44"
 }
+
+###
+
+DELETE http://localhost:8080/api/podcasts/Test+2
+
+###
+
+GET http://localhost:8080/api/podcasts/Test+3/comments
+
+###
+POST http://localhost:8080/api/podcasts/Test+3/comments
+Content-Type: application/json
+
+{
+    "userId": 46,
+    "comment": "Science is cool"
+}
+
+###
+
+PATCH http://localhost:8080/api/podcasts/Test+3/actions/subscribe
+
+###
+
+GET http://localhost:8080/api/categories/Education/search/keyword/asd
+
+###
+
+GET http://localhost:8080/api/categories/Education/search/year/2018
+
+###
+GET http://localhost:8080/api/keywords/asd
