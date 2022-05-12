@@ -1,0 +1,58 @@
+POST http://localhost:8080/api/podcasts
+Content-Type: application/json
+
+{
+    "authorId":null,
+    "title":"Test 6",
+    "journal":"Journal 6",
+    "publishedDate":"2020-01-09T22:09:17.863Z",
+    "DOI":"123.321/aaa",
+    "keywords":"asd,dasd,dsa",
+    "url":"",
+    "category":"Education"
+}
+
+###
+
+GET http://localhost:8080/api/podcasts/Test+2
+
+###
+
+PATCH http://localhost:8080/api/podcasts/A+different+Test+(no+author)
+Content-Type: application/json
+
+{
+    "authorId":null,
+    "title":"A1 different Test (no author)",
+    "journal":"1",
+    "publishedDate":"2022-05-11T22:09:17.863Z",
+    "DOI":"123.321/aaa",
+    "keywords":"asd,dasd,dsa",
+    "url":"",
+    "category":"Computer Science"
+}
+
+###
+
+GET http://localhost:8080/api
+
+###
+
+GET http://localhost:8080/api/search/keyword/TEST!
+
+###
+
+GET http://localhost:8080/api/search/year/2017
+
+###
+
+GET http://localhost:8080/api/categories
+
+###
+
+PATCH http://localhost:8080/api/podcasts/Test+6/actions/like
+Content-Type: application/json
+
+{
+    "userId" : "44"
+}
