@@ -36,7 +36,7 @@ router.use('/', async (req, res, next) => {
 router.get('/', async (req, res) => {
     let podcastCollection = podscholar.collection('podcasts')
     try {
-        let result = await podcastCollection.find({}, { "limit": 10 }).toArray()
+        let result = await podcastCollection.find({}, { "limit": 10 }).sort(publishedDate).toArray()
         res.send(result)
     }
     catch (e) {
@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -65,7 +65,7 @@ router.get('/search/keyword/:keyword', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -86,7 +86,7 @@ router.get('/search/year/:Year', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -97,7 +97,6 @@ router.get('/search/author/:name', async (req, res) => {
 
 
     try {
-
         let user = await userCollection.findOne({
             $or: [
                 { firstName: name[0] },
@@ -116,7 +115,7 @@ router.get('/search/author/:name', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -133,7 +132,7 @@ router.get('/categories', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -154,7 +153,7 @@ router.get('/categories/:scientificDiscipline', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -177,7 +176,7 @@ router.get('/categories/:scientificDiscipline/search/keyword/:keyword', async (r
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -198,7 +197,7 @@ router.get('/categories/:scientificDiscipline/search/year/:Year', async (req, re
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -215,7 +214,7 @@ router.get('/keywords', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -236,7 +235,7 @@ router.get('/keywords/:keyword', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -257,7 +256,7 @@ router.get('/keywords/:keyword/search/date/:date ', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -280,7 +279,26 @@ router.post('/podcasts', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
+    }
+})
+
+router.get('/podcasts/byId/:id', async (req, res) => {
+    let podcastCollection = podscholar.collection('podcasts')
+    try {
+
+        let query = {
+            _id: mongo.ObjectId(req.params.id)
+        }
+        let result = await podcastCollection.findOne(query);
+        res.send(result)
+    }
+    catch (e) {
+        console.log(e)
+        res.status(500).send('Error: ' + e)
+    }
+    finally {
+
     }
 })
 
@@ -301,7 +319,7 @@ router.get('/podcasts/:podcastTitle', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -324,7 +342,7 @@ router.patch('/podcasts/:podcastTitle', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -344,7 +362,7 @@ router.delete('/podcasts/:podcastTitle', async (req, res) => {
         res.status(400).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -386,7 +404,7 @@ router.patch('/podcasts/:podcastTitle/actions/like', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -413,7 +431,7 @@ router.get('/podcasts/:podcastTitle/comments', async (req, res) => {
         res.status("400").send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -463,14 +481,9 @@ router.post('/podcasts/:podcastTitle/comments', async (req, res) => {
         res.status("400").send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
-
-
-
-
-
 
 
 //#endregion

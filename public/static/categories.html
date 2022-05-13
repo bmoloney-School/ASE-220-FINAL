@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+    <style>
+    </style>
+    <!-- Custom styles for this template -->
+    <link href="/styles/template" rel="stylesheet">
+</head>
+
+<body onload="refeshPodcasts()">
+    <div class=" container" id="navbar">
+        <header
+            class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+                <li><a href="./" class="nav-link px-2 link-secondary">Home</a></li>
+                <li><a href="./account/settings" class="nav-link px-2 link-dark">User Information</a></li>
+                <li><a href="./pages/rules" class="nav-link px-2 link-dark">Rules</a></li>
+                <li><a href="./pages/about" class="nav-link px-2 link-dark">About</a></li>
+            </ul>
+            <div class="col-md-3 text-end" id="loginButtons">
+                <a type="button" href="./auth/signin" class="btn btn-outline-primary me-2">Login</a>
+                <a type="button" href="./auth/signup" class="btn btn-primary">Sign-up</a>
+            </div>
+        </header>
+    </div>
+    <main>
+        <div class="container align-content-center">
+            <h1>Number of Podcasts Per Category</h1>
+            <div class="row" id="podcastHolder">
+
+            </div>
+        </div>
+        <a href="./podcasts/create" class="float">
+            <img src="./assets/plus">
+        </a>
+    </main>
+    <footer>
+
+    </footer>
+    <script src="./shared.js"></script>
+    <script>
+
+        const userId = getAllUrlParams().id;
+
+
+        function renderCount(count) {
+
+            const podcastCard = `
+                <div class=" w-75 my-4">
+                    <h5>${count}</h5>
+                </div>`
+            $("#podcastHolder").append(podcastCard)
+        }
+
+        function renderHeader(headerText) {
+            let parent = $("#podcastHolder").append(`<hr/><h1 class="h2">${headerText}</h1>`)
+        }
+        //This technically doesn't work right if you have no podcasts but if that happens in a production enviroment you have bigger problems
+        function refeshPodcasts() {
+            $.getJSON(backend + '/podcasts', function (data) {
+                let lastCategory = null;
+                let categoryCount = 0;
+                console.log(data)
+                data.podcasts.forEach(podcast => {
+                    if (podcast.category == lastCategory || lastCategory == null) {
+                        categoryCount++;
+                    }
+                    else {
+                        renderHeader(lastCategory)
+                        renderCount(categoryCount)
+                        categoryCount = 1;
+                    }
+                    lastCategory = podcast.category;
+                });
+                // Print the last category 
+                renderHeader(lastCategory)
+                renderCount(categoryCount)
+
+            })
+        }
+        updateLoginButtons(userId);
+        updateLinks()
+    </script>
+</body>
+
+</html>

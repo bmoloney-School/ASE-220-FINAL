@@ -41,7 +41,7 @@ router.post('/auth/signup', async (req, res) => {
         res.status(500).send('Error connecting to DB: ' + e)
     }
     finally {
-        client.close()
+
     }
 })
 
@@ -73,9 +73,10 @@ router.post('/auth/signin', async (req, res) => {
         res.status(500).send('Error connecting to DB: ' + e)
     }
     finally {
-        client.close()
+
     }
 })
+
 
 router.post('/authors', async (req, res) => {
     userCollection = podscholar.collection('users');
@@ -107,7 +108,37 @@ router.post('/authors', async (req, res) => {
         res.status(500).send('Error connecting to DB: ' + e)
     }
     finally {
-        client.close()
+
+    }
+})
+
+router.get('/users/byId/:id', async (req, res) => {
+    userCollection = podscholar.collection('users');
+    try {
+        let query = {
+            _id: mongo.ObjectId(req.params.id)
+        }
+
+        let projection = {
+            projection: {
+                email: 0,
+                password: 0
+            }
+        }
+        let result = await userCollection.findOne(query, projection)
+
+        if (!result) {
+            res.status(400);
+            result = { "Error": "User Not found" };
+        }
+        res.send(result)
+    }
+    catch (e) {
+        console.log(e)
+        res.status(500).send('Error connecting to DB: ' + e)
+    }
+    finally {
+
     }
 })
 
@@ -139,9 +170,11 @@ router.get('/users/:first/:last', async (req, res) => {
         res.status(500).send('Error connecting to DB: ' + e)
     }
     finally {
-        client.close()
+
     }
 })
+
+
 
 router.patch('/users/:first/:last/actions/follow', async (req, res) => {
     let userCollection = podscholar.collection('users')
@@ -183,7 +216,7 @@ router.patch('/users/:first/:last/actions/follow', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -215,7 +248,7 @@ router.get('/users/:first/:last/followers', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
@@ -243,22 +276,26 @@ router.get('/users/:first/:last/likedPodcasts', async (req, res) => {
         res.status(500).send('Error: ' + e)
     }
     finally {
-        client.close();
+
     }
 })
 
-// Upadate user info -- Passing the Id in the header to make it easier to update user by just passing in body to mongo
+//Update user account (Non sensitive)
 router.patch('/account', async (req, res) => {
     userCollection = podscholar.collection('users');
     try {
+        let user = req.body;
         let query = {
-            _id: mongo.ObjectId(req.headers.id)
+            email: user.email,
+            password: hash(user.password)
         }
-        let update = req.body
+        delete user.email;
+        delete user.password;
+        let update = {
+            $set: user
+        }
 
-        update.modifiedDate = new Date(Date.now()).toISOString()
-
-        let result = await userCollection.updateOne(query, { $set: update })
+        let result = await userCollection.updateOne(query, update)
 
         if (!result) {
             res.status(400);
@@ -271,7 +308,44 @@ router.patch('/account', async (req, res) => {
         res.status(500).send('Error connecting to DB: ' + e)
     }
     finally {
-        client.close()
+
     }
 })
+
+//Update user account (Non sensitive)
+router.patch('/account/:accountId', async (req, res) => {
+    userCollection = podscholar.collection('users');
+    try {
+        let user = {}
+        if (req.body.email) {
+            user.email = req.body.email
+        }
+        if (req.body.password) {
+            user.password = hash(req.body.password)
+        }
+        let query = {
+            _id: mongo.ObjectId(req.params.accountId)
+        }
+
+        let update = {
+            $set: user
+        }
+
+        let result = await userCollection.updateOne(query, update)
+
+        if (!result) {
+            res.status(400);
+            result = { "Error": "User Not found" };
+        }
+        res.send(result)
+    }
+    catch (e) {
+        console.log(e)
+        res.status(500).send('Error connecting to DB: ' + e)
+    }
+    finally {
+
+    }
+})
+
 module.exports = { router }

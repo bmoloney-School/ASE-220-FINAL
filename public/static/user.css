@@ -1,0 +1,17 @@
+#userInformation {
+    background-color: #ffffff;
+    padding: 0% 0% 1% 0% ;
+}
+#userInformation div {
+    width: 100%;
+}
+#userInformation h1 {
+    background-color: rgba(0,0,0,.03);
+    border-bottom: 1px solid rgba(0,0,0,.125);
+    padding: .5rem 1rem;
+    width: 100%;
+}
+#userInformation div p {
+    padding-left: 3%;
+    padding-top: 1%;
+}

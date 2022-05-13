@@ -63,11 +63,20 @@ GET http://localhost:8080/api/users/Brandon/Moloney/likedPodcasts
 ###
 
 PATCH http://localhost:8080/api/account
-id: 627d8513bb2e3e9ee24cec15
 Content-Type: application/json
 
 {
+    "email":"secondTest@email.com",
+    "password":"dogs",
     "firstName": "James",
     "lastName": "Brown",
-    "organization": "NKU"
+    "organization": "WKU"
+}
+
+###
+PATCH http://localhost:8080/api/account/627d8513bb2e3e9ee24cec15
+Content-Type: application/json
+
+{
+    "password":"dogs"
 }
