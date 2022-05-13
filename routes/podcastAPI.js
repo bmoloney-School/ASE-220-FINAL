@@ -90,6 +90,36 @@ router.get('/search/year/:Year', async (req, res) => {
     }
 })
 
+router.get('/search/author/:name', async (req, res) => {
+    let podcastCollection = podscholar.collection('podcasts')
+    let userCollection = podscholar.collection('users')
+    let name = req.params.name.split('+')
+
+
+    try {
+
+        let user = await userCollection.findOne({
+            $or: [
+                { firstName: name[0] },
+                { lastName: name[0] }
+            ]
+        })
+        let query = {
+            authorId: user._id
+        }
+
+        let result = await podcastCollection.find(query, { "limit": 10 }).toArray()
+        res.send(result)
+    }
+    catch (e) {
+        console.log(e)
+        res.status(500).send('Error: ' + e)
+    }
+    finally {
+        client.close();
+    }
+})
+
 //Retrieves a list of all the scientific disciplines and the total number of podcasts for each scientific discipline 
 router.get('/categories', async (req, res) => {
     let podcastCollection = podscholar.collection('podcasts')
@@ -241,7 +271,7 @@ router.post('/podcasts', async (req, res) => {
     try {
         let newPodcast = req.body;
         newPodcast.modifiedDate = new Date(Date.now()).toISOString()
-
+        newPodcast.authorId = mongo.ObjectId(newPodcast.authorId) ?? -1;
         let result = await podcastCollection.insertOne(newPodcast);
         res.send(result)
     }
@@ -318,11 +348,6 @@ router.delete('/podcasts/:podcastTitle', async (req, res) => {
     }
 })
 
-//Subscribes/unsubscribe to a specific podcast -- Not sure how this differs from a like 
-//system since you would not have a series of podcasts about a single paper. If anything, this should be implemented as a 'subscribe to an author' feature. 
-router.patch('/podcasts/:podcastTitle/actions/subscribe', async (req, res) => {
-    res.status(501).send('Not yet Implemented')
-})
 
 //Likes/unlikes a specific podcast:
 router.patch('/podcasts/:podcastTitle/actions/like', async (req, res) => {
@@ -364,6 +389,7 @@ router.patch('/podcasts/:podcastTitle/actions/like', async (req, res) => {
         client.close();
     }
 })
+
 
 //Retrieves all the comment to a podcast
 router.get('/podcasts/:podcastTitle/comments', async (req, res) => {
@@ -440,6 +466,11 @@ router.post('/podcasts/:podcastTitle/comments', async (req, res) => {
         client.close();
     }
 })
+
+
+
+
+
 
 
 //#endregion

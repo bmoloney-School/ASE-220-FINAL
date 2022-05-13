@@ -1,0 +1,73 @@
+POST http://localhost:8080/api/auth/signup
+Content-Type: application/json
+
+{
+    "email": "secondTest@email.com",
+    "password": "unladenSwallow2",
+    "firstName": "John",
+    "lastName": "Doe",
+    "Organizaiton": "NKU"
+}
+###
+
+POST http://localhost:8080/api/auth/signin
+Content-Type: application/json
+
+{
+    "email": "test@email.com",
+    "password": "unladenSwallow2"
+}
+
+###
+
+POST http://localhost:8080/api/auth/signin
+Content-Type: application/json
+
+{
+    "email": "test@email.com",
+    "password": "unladenSwallow1"
+}
+
+### 
+
+POST http://localhost:8080/api/authors
+Content-Type: application/json
+
+{
+    "email": "test@email.com",
+    "password": "unladenSwallow2",
+    "title": "Sr. Dr. of science",
+    "biography": "I am scientist who does science"
+}
+
+### 
+GET http://localhost:8080/api/users/Brandon/Moloney
+
+###
+
+PATCH http://localhost:8080/api/users/Brandon/Moloney/actions/follow
+Content-Type: application/json
+
+{
+    "userId": "627d8513bb2e3e9ee24cec15"
+}
+
+###
+
+GET http://localhost:8080/api/users/Brandon/Moloney/followers
+
+###
+
+GET http://localhost:8080/api/users/Brandon/Moloney/likedPodcasts
+
+###
+
+PATCH http://localhost:8080/api/account
+id: 627d8513bb2e3e9ee24cec15
+Content-Type: application/json
+
+{
+    "firstName": "James",
+    "lastName": "Brown",
+    "organization": "NKU"
+}

@@ -2,19 +2,19 @@ POST http://localhost:8080/api/podcasts
 Content-Type: application/json
 
 {
-    "authorId":null,
-    "title":"Test 6",
-    "journal":"Journal 6",
+    "authorId":"627d716ac43c380bb3dd72bb",
+    "title":"Test 16",
+    "journal":"Some new journal 6",
     "publishedDate":"2020-01-09T22:09:17.863Z",
     "DOI":"123.321/aaa",
     "keywords":"asd,dasd,dsa",
     "url":"",
-    "category":"Education"
+    "category":"Math"
 }
 
 ###
 
-GET http://localhost:8080/api/podcasts/Test+2
+GET http://localhost:8080/api/podcasts/Test+6
 
 ###
 
@@ -81,6 +81,9 @@ PATCH http://localhost:8080/api/podcasts/Test+3/actions/subscribe
 ###
 
 GET http://localhost:8080/api/categories/Education/search/keyword/asd
+
+###
+GET http://localhost:8080/api/search/author/Brandon
 
 ###
 
