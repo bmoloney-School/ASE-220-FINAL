@@ -106,7 +106,7 @@
                     <div class="card-body container align-content-center">
                         <a href="./author?author=${authorId}&id=${userId}"><h5 class="card-title">Author: ${author}</h5><a/>
                         <p class="card-text">DOI:  ${doi}</p>
-                        <p class="card-text">Date:  ${date}</p>
+                        <p class="card-text"> Published Date:  ${date}</p>
                         <p class="card-text">Category:  ${category}</p>
                         <a href="${link}" class="btn btn-primary">Listen</a>`
             if (likes?.includes(userId)) {
@@ -238,7 +238,9 @@
 
             //Call to make if there are NO filters set
             if (callsToMake.length == 0) {
+                console.log(backend)
                 $.getJSON(backend + '/', function (data) {
+                    console.log(backend + '/')
                     podcasts = data
                     renderPodcasts()
                 });

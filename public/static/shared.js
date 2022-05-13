@@ -1,6 +1,6 @@
 // Functions & values shared by multiple pages
-const backend = "http://localhost:8080/api";
-
+const backend = window.location.protocol + '//' + window.location.host + '/api';
+console.log(backend)
 function getAllUrlParams(url) {
     // get query string from url (optional) or window
     var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
