@@ -28,7 +28,7 @@
             class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                 <li><a href="../" class="nav-link px-2 link-dark">Home</a></li>
-                <li><a href="../account/settings" class="nav-link px-2 link-secondary">User Information</a></li>
+                <li><a href="../account" class="nav-link px-2 link-secondary">User Information</a></li>
                 <li><a href="../pages/rules" class="nav-link px-2 link-dark">Rules</a></li>
                 <li><a href="../pages/about" class="nav-link px-2 link-dark">About</a></li>
             </ul>
@@ -39,32 +39,31 @@
         </header>
     </div>
 
-    <main class="form w-100" style="max-width: 400px">
-
+    <main class="form w-100" style="max-width: 400px; text-align:left; background-color: lightgray; border-radius: 2%;">
         <h1 id="podcastTitle">Title: </h1>
         <p class="h5" id="titleContainer"></p>
         <h2 id="podcastAuthor">Author: </h2>
-        <p class="h5" id="authorContainer"></p>
+        <p class="h5" id="authorContainer" style="text-align:left;"></p>
         <h2 id="podcastDate">Published: </h2>
-        <p class="h5" id="dateContainer"></p>
+        <p class="h5" id="dateContainer" style="text-align:left;"></p>
         <h2 id="podcastDOI">DOI: </h2>
-        <p class="h5" id="doiContainer"></p>
+        <p class="h5" id="doiContainer" style="text-align:left;"></p>
         <h2 id="podcastDescription">Description: </h2>
-        <p class="h5" id="descriptionContainer"></p>
+        <p class="h5" id="descriptionContainer" style="text-align:left;"></p>
         <audio controls>
-            <source src="../Podcast.mp4" type="audio/mpeg">
+            <source src="/Podcast.mp4" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
         <input type="button" class="button w-100 btn btn-md btn-primary my-2" onclick="history.back(-1)" value="Back" />
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2021</p>
     </main>
-    <script src="/js/shared"></script>
+    <script src="../js/shared"></script>
     <script>
         const userId = getAllUrlParams().id;
         const podcastId = getAllUrlParams().podcast;
 
         if (!userId) {
-            window.location.replace("./auth/signin")
+            window.location.replace("../auth/signin")
         }
 
         $.getJSON(backend + '/podcasts/byId/' + podcastId, function (data) {
@@ -75,6 +74,7 @@
             })
             $("#dateContainer").text(stripTime(data.publishedDate))
             $("#doiContainer").text(data.DOI)
+            $("#descriptionContainer").text(data.description)
         })
 
         updateLoginButtons(userId);

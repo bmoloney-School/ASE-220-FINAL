@@ -28,7 +28,7 @@
             class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                 <li><a href="./" class="nav-link px-2 link-dark">Home</a></li>
-                <li><a href="./account/settings" class="nav-link px-2 link-secondary">User Information</a></li>
+                <li><a href="./account" class="nav-link px-2 link-secondary">User Information</a></li>
                 <li><a href="./pages/rules" class="nav-link px-2 link-dark">Rules</a></li>
                 <li><a href="./pages/about" class="nav-link px-2 link-dark">About</a></li>
             </ul>
@@ -56,6 +56,10 @@
                     <h1 class="h4">Organization:</h1>
                     <p id="org"></p>
                 </div>
+                <div>
+                    <h1 class="h4">Biography:</h1>
+                    <p id="bio"></p>
+                </div>
             </div>
             <div class="col" id="podcasts">
                 <h2></h2>
@@ -68,7 +72,7 @@
         const authorId = getAllUrlParams().author
 
         if (!userId) {
-            window.location.replace("./login.html")
+            window.location.replace("./auth/signin")
         }
 
         function renderPodcast(title, author, doi, date, category, link, parentElement) {
@@ -88,18 +92,19 @@
         }
 
         // get users to check against once we know all fields are filled
-        $.getJSON(backend + '/user/' + authorId, function (user) {
+        $.getJSON(backend + '/users/byId/' + authorId, function (user) {
             console.log(user)
             if (user) {
                 $("#name").text(user.firstName + " " + user.lastName);
                 $("#email").text(user.email);
                 $("#title").text(user.title);
                 $("#org").text(user.organization);
+                $("#bio").text(user.biography);
             }
-            $.getJSON(backend + '/podcasts/author/' + user._id, function (data) {
+            $.getJSON(backend + '/podcasts/byAuthor/' + authorId, function (data) {
                 console.log(data);
-                data.podcasts.forEach(podcast => {
-                    renderPodcast(podcast.description,
+                data.forEach(podcast => {
+                    renderPodcast(podcast.title,
                         user.firstName + ' ' + user.lastName,
                         podcast.DOI,
                         podcast.publishedDate,

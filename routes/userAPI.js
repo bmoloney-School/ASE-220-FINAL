@@ -121,7 +121,6 @@ router.get('/users/byId/:id', async (req, res) => {
 
         let projection = {
             projection: {
-                email: 0,
                 password: 0
             }
         }
@@ -280,17 +279,16 @@ router.get('/users/:first/:last/likedPodcasts', async (req, res) => {
     }
 })
 
-//Update user account (Non sensitive)
 router.patch('/account', async (req, res) => {
     userCollection = podscholar.collection('users');
     try {
         let user = req.body;
         let query = {
-            email: user.email,
-            password: hash(user.password)
+            _id: mongo.ObjectId(req.body._id)
         }
-        delete user.email;
-        delete user.password;
+        delete user._id;
+        if (user.password) user.password = hash(user.password)
+
         let update = {
             $set: user
         }
@@ -313,25 +311,14 @@ router.patch('/account', async (req, res) => {
 })
 
 //Update user account (Non sensitive)
-router.patch('/account/:accountId', async (req, res) => {
+router.get('/users/byEmail/:email', async (req, res) => {
     userCollection = podscholar.collection('users');
     try {
-        let user = {}
-        if (req.body.email) {
-            user.email = req.body.email
-        }
-        if (req.body.password) {
-            user.password = hash(req.body.password)
-        }
         let query = {
-            _id: mongo.ObjectId(req.params.accountId)
+            email: req.params.email
         }
 
-        let update = {
-            $set: user
-        }
-
-        let result = await userCollection.updateOne(query, update)
+        let result = await userCollection.findOne(query)
 
         if (!result) {
             res.status(400);

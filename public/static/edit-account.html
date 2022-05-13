@@ -28,7 +28,7 @@
             class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                 <li><a href="./" class="nav-link px-2 link-dark">Home</a></li>
-                <li><a href="./account/settings" class="nav-link px-2 link-secondary">User Information</a></li>
+                <li><a href="./account" class="nav-link px-2 link-secondary">User Information</a></li>
                 <li><a href="./pages/rules" class="nav-link px-2 link-dark">Rules</a></li>
                 <li><a href="./pages/about" class="nav-link px-2 link-dark">About</a></li>
             </ul>
@@ -53,10 +53,6 @@
                 </div>
             </div>
             <div class="form-floating py-1">
-                <input type="email" class="form-control" id="email" placeholder="name@example.com">
-                <label for="email">Email address</label>
-            </div>
-            <div class="form-floating py-1">
                 <input type="text" class="form-control" id="title" placeholder="name@example.com">
                 <label for="title">Position/Title</label>
             </div>
@@ -64,37 +60,57 @@
                 <input type="text" class="form-control" id="organization" placeholder="name@example.com">
                 <label for="organization">University/Organization</label>
             </div>
+            <div class="form-floating py-1">
+                <input type="text" class="form-control" id="bio" placeholder="name@example.com">
+                <label for="bio">Biography</label>
+            </div>
+            <div class="form-floating py-1">
+                <input type="email" class="form-control" id="email" placeholder="name@example.com">
+                <label for="email">Email address</label>
+            </div>
+            <div class="form-floating py-1">
+                <input type="password" class="form-control" id="oldPassword" placeholder="name@example.com">
+                <label for="oldPassword">Old Password</label>
+            </div>
+            <div class="form-floating py-1">
+                <input type="password" class="form-control" id="password" placeholder="name@example.com">
+                <label for="password">New Password</label>
+            </div>
             <p id="UserAlreadyExists" class="hidden text-danger vaidationMessage">user with this email
                 already exists</p>
             <p id="MissingFields" class="hidden text-danger vaidationMessage">All fields are required</p>
-            <p id="passwordMismatch" class="hidden text-danger vaidationMessage">Passwords do not match</p>
+            <p id="passwordMismatch" class="hidden text-danger vaidationMessage">Incorrect Password or Invalid new
+                password</p>
 
             <button id="update-account-submit" class="w-100 btn btn-lg btn-primary" type="button">Save</button>
         </form>
-        <a class="button w-100 btn btn-md btn-primary my-2" href="./user.html">Back</a>
+        <a class="button w-100 btn btn-md btn-primary my-2" href="./">Back</a>
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2021</p>
     </main>
     <script src="/js/shared"></script>
     <script>
         const userId = getAllUrlParams().id;
-
+        var oldEmail = "";
+        let validated = true;
         if (!userId) {
-            window.location.replace("./login.html")
+            window.location.replace("./auth/signin")
         }
 
-        $.getJSON(backend + '/user/' + userId, function (data) {
+        $.getJSON(backend + '/users/byId/' + userId, function (data) {
             console.log(data);
+            oldEmail = data.email
             $('#firstName').val(data.firstName);
             $('#lastName').val(data.lastName);
             $('#email').val(data.email);
             $('#title').val(data.title);
             $('#organization').val(data.organization);
+            $('#bio').val(data.biography);
         })
 
 
         $(document).on('click', '#update-account > button', () => {
             // reset validation on new submit
-            let validated = true;
+            validated = true;
             $(".vaidationMessage").addClass('hidden')
             $(".form-floating > input").removeClass("border border-danger rounded");
 
@@ -107,15 +123,39 @@
                 }
             });
 
-            if ($("#password").val() != $("#passwordConfirm").val()) {
-                $(".form-floating > #password").addClass("border border-danger rounded");
-                $(".form-floating > #passwordConfirm").addClass("border border-danger rounded");
-                $('#passwordMismatch').removeClass("hidden");
-                validated = false;
+            if ($("#oldPassword").val() != "" && $("#password").val() != "") {
+                console.log(oldEmail)
+                $.ajax({
+                    url: backend + '/auth/signin',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        email: oldEmail,
+                        password: $('#oldPassword').val()
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (response, status, xhr) {
+                        console.log(response, status);
+                        if (response.error) {
+                            validated = false;
+                            $(".form-floating > #password").addClass("border border-danger rounded");
+                            $(".form-floating > #passwordConfirm").addClass("border border-danger rounded");
+                            $('#passwordMismatch').removeClass("hidden");
+                        }
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        validated = false;
+                        $(".form-floating > #password").addClass("border border-danger rounded");
+                        $(".form-floating > #passwordConfirm").addClass("border border-danger rounded");
+                        $('#passwordMismatch').removeClass("hidden");
+                    }
+                    //Wait until call to api is complete then redirect to login page
+                })
             }
 
-            $.getJSON(backend + '/user/email/' + $("#email").val(), function (data) {
-                if (!data.message && data._id != userId) {
+            $.getJSON(backend + '/users/byEmail/' + $("#email").val(), function (data) {
+                if (data._id != userId) {
+                    console.log('Email exists')
                     $(".form-floating > input").addClass("border border-danger rounded");
                     $('#MissingFields').removeClass("hidden");
                     console.log('email already in DB');
@@ -127,18 +167,23 @@
             if (validated) {
                 //This is the best way I found to append the new user to the existing ones.
                 console.log($('#firstName').val(), $('#lastName').val(), $('#email').val(), $('#title').val(), $('#organization').val())
-                let data = JSON.stringify({
+                let data = {
+                    _id: userId,
                     firstName: $('#firstName').val(),
                     lastName: $('#lastName').val(),
-                    email: $('#email').val(),
                     title: $('#title').val(),
-                    organization: $('#organization').val()
-                })
-                console.log(backend + '/user/' + userId)
+                    organization: $('#organization').val(),
+                    biography: $('#bio').val()
+                }
+
+                if ($('#password').val() != "" && $("#oldPassword").val() != "") {
+                    data.password = $('#password').val()
+                }
+                console.log('here')
                 $.ajax({
-                    url: backend + '/user/' + userId,
-                    type: 'PUT',
-                    data: data,
+                    url: backend + '/account/',
+                    type: 'PATCH',
+                    data: JSON.stringify(data),
                     contentType: "application/json; charset=utf-8",
                     success: function (response, status, xhr) {
                         console.log(response, status);

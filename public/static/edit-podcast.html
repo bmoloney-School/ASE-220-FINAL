@@ -28,7 +28,7 @@
             class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                 <li><a href="./" class="nav-link px-2 link-dark">Home</a></li>
-                <li><a href="./account/settings" class="nav-link px-2 link-secondary">User Information</a></li>
+                <li><a href="./account" class="nav-link px-2 link-secondary">User Information</a></li>
                 <li><a href="./pages/rules" class="nav-link px-2 link-dark">Rules</a></li>
                 <li><a href="./pages/about" class="nav-link px-2 link-dark">About</a></li>
             </ul>
@@ -65,6 +65,10 @@
                 <input type="text" class="form-control" id="keywords">
                 <label for="organization">Keywords (Seperated by a comma)</label>
             </div>
+            <label for="Description" style="opacity:.6;">Description</label>
+            <div class="form-floating py-1">
+                <textarea id="Description" cols="36" rows="5"></textarea>
+            </div>
             <div class="form-floating py-1">
                 <input list="category-list" class="form-control" id="category">
                 <datalist id="category-list">
@@ -76,7 +80,6 @@
                 </datalist>
                 <label for="category">Category</label>
             </div>
-            <input type="file" class="form-control mb-3" id="url" accept="audio/mp3, audio/mp4">
 
             <p id="DoiAlreadyExists" class="hidden text-danger vaidationMessage">A podcast for this document already
                 exists</p>
@@ -84,26 +87,29 @@
             <button id="submit" class="w-100 btn btn-lg btn-primary" type="button">Submit
                 Podcast</button>
         </form>
-        <a class="button w-100 btn btn-md btn-primary my-2" href="./user.html">Back</a>
+        <a class="button w-100 btn btn-md btn-primary my-2" href="../account">Back</a>
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2021</p>
     </main>
     <script src="/js/shared"></script>
     <script>
         const userId = getAllUrlParams().id;
         const podcastId = getAllUrlParams().podcast;
+        let oldTitle = "";
 
         if (!userId) {
-            window.location.replace("../login.html")
+            window.location.replace("../auth/signin")
         }
 
-        $.getJSON(backend + '/podcast/byId/' + podcastId, function (data) {
+        $.getJSON(backend + '/podcasts/byId/' + podcastId, function (data) {
             console.log(data);
-            $('#title').val(data.Title);
+            oldTitle = data.title;
+            $('#title').val(data.title);
             $('#journal').val(data.journal);
-            $('#publishedDate').val(data.publishedDate);
+            $('#publishedDate')[0].valueAsDate = new Date(data.publishedDate);
             $('#doi').val(data.DOI);
-            $('#keywords').val(data.tags);
+            $('#keywords').val(data.keywords);
             $('#category').val(data.category);
+            $('#Description').val(data.description);
         })
 
 
@@ -130,13 +136,15 @@
                     journal: $('#journal').val(),
                     publishedDate: $('#publishedDate').val(),
                     DOI: $('#doi').val(),
-                    tags: $('#keywords').val(),
-                    category: $("#category").val()
+                    keywords: $('#keywords').val(),
+                    category: $("#category").val(),
+                    description: $('#Description').val()
                 }
+                console.log(data)
                 //This is the best way I found to append the new user to the existing ones.
                 $.ajax({
-                    url: backend + '/podcast/' + podcastId,
-                    type: 'PUT',
+                    url: backend + '/podcasts/' + oldTitle.split(' ').join('+'),
+                    type: 'PATCH',
                     data: JSON.stringify(data),
                     contentType: "application/json; charset=utf-8",
                     success: function (response, status, xhr) {
@@ -147,7 +155,7 @@
                     }
                     //Wait until call to api is complete then redirect to login page
                 }).then(() => {
-                    window.alert('Your account changes have been saved')
+                    window.alert('Your podcast changes have been saved')
                 });
             }
 

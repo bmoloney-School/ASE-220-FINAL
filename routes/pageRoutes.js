@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const fs = require('fs')
 
-//app.use(express.static()) was not working for me
+//app.use(express.static()) was not working for me -- and then I got it to work but was too lazy to change everything again
 // Static Resources
 router.get('/styles/signin', (req, res) => {
     res.setHeader('content-type', 'text/css')
@@ -67,7 +67,14 @@ router.get('/auth/reset-password', (req, res) => {
     res.status(200).send(fs.readFileSync('./public/static/reset-password.html', 'utf-8'))
 })
 
-router.get('/account/settings', (req, res) => {
+router.get('/account', (req, res) => {
+    res.status(200).send(fs.readFileSync('./public/static/user.html', 'utf-8'))
+})
+router.get('/author', (req, res) => {
+    res.status(200).send(fs.readFileSync('./public/static/author.html', 'utf-8'))
+})
+
+router.get('/account/edit', (req, res) => {
     res.status(200).send(fs.readFileSync('./public/static/edit-account.html', 'utf-8'))
 })
 
@@ -78,5 +85,12 @@ router.get('/podcasts/create', (req, res) => {
 router.get('/podcasts/listen', (req, res) => {
     res.status(200).send(fs.readFileSync('./public/static/listen.html', 'utf-8'))
 })
+
+router.get('/podcasts/edit', (req, res) => {
+    res.status(200).send(fs.readFileSync('./public/static/edit-podcast.html', 'utf-8'))
+})
+
+// Ran out of time to actually figure out storing files
+router.use(express.static('public/static/assets'));
 
 module.exports = { router }

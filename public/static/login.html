@@ -13,7 +13,7 @@
         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- Custom styles for this page -->
-    <link href="./styles/signin.css" rel="stylesheet">
+    <link href="../styles/signin" rel="stylesheet">
 </head>
 
 <body class="text-center">
@@ -38,15 +38,15 @@
                 <button id="sign-in-submit" class="w-100 btn btn-lg btn-primary" type="button">Sign in</button>
 
         </form>
-        <a class="button w-50 btn btn-md btn-primary my-2" href="./createAccount.html">Create Account</a>
-        <a class="button w-50 btn btn-md btn-primary my-2" href="./index.html">Back to Home</a>
+        <a class="button w-50 btn btn-md btn-primary my-2" href="./signup">Create Account</a>
+        <a class="button w-50 btn btn-md btn-primary my-2" href="../">Back to Home</a>
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2021</p>
     </main>
-    <script src="shared.js"></script>
+    <script src="../js/shared"></script>
     <script>
         $(document).on('click', '#sign-in > button', () => {
             $.ajax({
-                url: backend + '/login',
+                url: backend + '/auth/signin',
                 type: 'POST',
                 data: JSON.stringify({
                     email: $('#email').val(),
@@ -62,15 +62,14 @@
                 //Wait until call to api is complete then redirect to login page
             }).then((data) => {
                 console.log(data)
-                if (data.userID) {
-                    window.location.replace("./index.html?id=" + data.userID);
+                if (data._id) {
+                    window.location.replace("../?id=" + data._id);
                 }
                 else {
 
                     $(".form-floating > input").addClass("border border-danger rounded");
                     $('#InvalidLogin').removeClass("hidden");
                 }
-
             });
         });
 

@@ -15,7 +15,7 @@ Content-Type: application/json
 
 {
     "email": "test@email.com",
-    "password": "unladenSwallow2"
+    "password": "dogs"
 }
 
 ###

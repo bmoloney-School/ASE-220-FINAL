@@ -15,6 +15,9 @@ let podscholar;
 /*
 I can already see that there could be some issues here if two podcasts have the same name, but I wanted to 
 stick as closely to the documentation provided so I i made all of the requests title based.
+
+Also, all of these have a finally block becuase I was initally closing the connection when done but with how I used the middlware
+It would close prematurely since the different requests share a connection -- Probably should be fixed and changed back so I left the finally blocks
 */
 
 router.use('/', async (req, res, next) => {
@@ -36,7 +39,7 @@ router.use('/', async (req, res, next) => {
 router.get('/', async (req, res) => {
     let podcastCollection = podscholar.collection('podcasts')
     try {
-        let result = await podcastCollection.find({}, { "limit": 10 }).sort(publishedDate).toArray()
+        let result = await podcastCollection.find({}, { "limit": 10 }).sort({ publishedDate: -1 }).toArray()
         res.send(result)
     }
     catch (e) {
@@ -54,6 +57,27 @@ router.get('/search/keyword/:keyword', async (req, res) => {
     let regex = ".*" + req.params.keyword + ".*";
     let query = {
         keywords: { $regex: regex }
+    }
+
+    try {
+        let result = await podcastCollection.find(query, { "limit": 10 }).toArray()
+        res.send(result)
+    }
+    catch (e) {
+        console.log(e)
+        res.status(500).send('Error: ' + e)
+    }
+    finally {
+
+    }
+})
+
+//Retrieves 10 podcasts from the database based on the search doi
+router.get('/search/doi/:DOI', async (req, res) => {
+    let podcastCollection = podscholar.collection('podcasts')
+    let regex = ".*" + req.params.DOI + ".*";
+    let query = {
+        DOI: { $regex: regex }
     }
 
     try {
@@ -302,6 +326,25 @@ router.get('/podcasts/byId/:id', async (req, res) => {
     }
 })
 
+router.get('/podcasts/byAuthor/:id', async (req, res) => {
+    let podcastCollection = podscholar.collection('podcasts')
+    try {
+
+        let query = {
+            authorId: mongo.ObjectId(req.params.id)
+        }
+        let result = await podcastCollection.find(query).toArray();
+        res.send(result)
+    }
+    catch (e) {
+        console.log(e)
+        res.status(500).send('Error: ' + e)
+    }
+    finally {
+
+    }
+})
+
 //Retrieves a specific podcast from the database
 router.get('/podcasts/:podcastTitle', async (req, res) => {
     let podcastCollection = podscholar.collection('podcasts')
@@ -334,7 +377,7 @@ router.patch('/podcasts/:podcastTitle', async (req, res) => {
             title: title
         }
 
-        let result = await podcastCollection.findOneAndReplace(filter, updatedPodcast);
+        let result = await podcastCollection.updateOne(filter, { "$set": updatedPodcast });
         res.send(result.value)
     }
     catch (e) {

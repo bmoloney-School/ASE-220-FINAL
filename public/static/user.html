@@ -18,8 +18,8 @@
     <style>
     </style>
     <!-- Custom styles for this template -->
-    <link href="../styles/template.css" rel="stylesheet">
-    <link href="../styles/user.css" rel="stylesheet">
+    <link href="../styles/template" rel="stylesheet">
+    <link href="../styles/user" rel="stylesheet">
 </head>
 
 <body class="user-layout">
@@ -27,14 +27,15 @@
         <header
             class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-                <li><a href="../index.html" class="nav-link px-2 link-dark">Home</a></li>
-                <li><a href="../user.html" class="nav-link px-2 link-secondary">User Information</a></li>
-                <li><a href="../rules.html" class="nav-link px-2 link-dark">Rules</a></li>
-                <li><a href="../about.html" class="nav-link px-2 link-dark">About</a></li>
+                <li><a href="./" class="nav-link px-2 link-dark">Home</a></li>
+                <li><a href="./account" class="nav-link px-2 link-secondary">User Information</a></li>
+                <li><a href="./pages/rules" class="nav-link px-2 link-dark">Rules</a></li>
+                <li><a href="./pages/about" class="nav-link px-2 link-dark">About</a></li>
+                <li><button id="toggle-podcasts" class="btn" style="margin-top:2px;">Liked Podcasts</button></li>
             </ul>
             <div class="col-md-3 text-end" id="loginButtons">
-                <a type="button" href="./signIn.html" class="btn btn-outline-primary me-2">Login</a>
-                <a type="button" href="./createAccount.html" class="btn btn-primary">Sign-up</a>
+                <a type="button" href="./auth/signin" class="btn btn-outline-primary me-2">Login</a>
+                <a type="button" href="./auth/signup" class="btn btn-primary">Sign-up</a>
             </div>
         </header>
     </div>
@@ -60,22 +61,26 @@
                     <p id="org"></p>
                 </div>
                 <div>
+                    <h1 class="h4">Biography:</h1>
+                    <p id="bio"></p>
+                </div>
+                <div>
                     <hr />
-                    <a href="edit.html" class="btn btn-primary mx-3 px-4">Edit</a>
+                    <a href="/account/edit" class="btn btn-primary mx-3 px-4">Edit</a>
                 </div>
             </div>
             <div class="col" id="podcasts">
-                <h2></h2>
-
+                <h2> My Podcasts</h2>
             </div>
         </div>
     </main>
-    <script src="../shared.js"></script>
+    <script src="/js/shared"></script>
     <script>
         const userId = getAllUrlParams().id;
-
+        var showLikedPodcasts = true;
+        var currentUser;
         if (!userId) {
-            window.location.replace("../login.html")
+            window.location.replace("../auth/signin")
         }
 
         function renderPodcast(title, author, doi, date, link, parentElement) {
@@ -87,34 +92,83 @@
                         <h5 class="card-title">Author:  ${author}</h5>
                         <p class="card-text">DOI:  ${doi}</p>
                         <p class="card-text">Date:  ${date}</p>
-                        <a href="../podcast/listen.html${link}" class="btn btn-primary" >Listen</a>
-                        <a href="../podcast/edit.html${link}" class="btn btn-primary" target="_blank">Edit</a>
+                        <a href="../podcasts/listen${link}" class="btn btn-primary" >Listen</a>
+                        <a href="../podcasts/edit${link}" class="btn btn-primary" target="_blank">Edit</a>
                     </div>
                 </div>`
             parentElement.append(podcastCard);
         }
 
         // get users to check against once we know all fields are filled
-        $.getJSON(backend + '/user/' + userId, function (user) {
+        $.getJSON(backend + '/users/byId/' + userId, function (user) {
             console.log(user)
+            currentUser = user
             if (user) {
                 $("#name").text(user.firstName + " " + user.lastName);
                 $("#email").text(user.email);
                 $("#title").text(user.title);
                 $("#org").text(user.organization);
+                $("#bio").text(user.biography);
             }
-            $.getJSON(backend + '/podcasts/author/' + user._id, function (data) {
+            $.getJSON(backend + '/podcasts/byAuthor/' + user._id, function (data) {
                 console.log(data);
-                data.podcasts.forEach(podcast => {
-                    renderPodcast(podcast.description,
+                data.forEach(podcast => {
+                    let listenLink = "?podcast=" + podcast._id
+                    if (userId) {
+                        listenLink += '&id=' + userId
+                    }
+                    renderPodcast(podcast.title,
                         user.firstName + ' ' + user.lastName,
                         podcast.DOI,
                         podcast.publishedDate,
-                        "?podcast=" + podcast._id + "&id=" + userId,
+                        listenLink,
                         $("#podcasts"));
                 });
             })
 
+        })
+
+        $(document).on('click', '#toggle-podcasts', () => {
+            $("#podcasts").empty()
+            if (showLikedPodcasts) {
+                $("#podcasts").append(`<h2> Liked Podcasts</h2>`)
+                $("#toggle-podcasts").text("My Podcasts")
+                $.getJSON(backend + '/users/' + currentUser.firstName + '/' + currentUser.lastName + '/likedPodcasts', function (data) {
+                    console.log(data);
+                    data.forEach(podcast => {
+                        let listenLink = "?podcast=" + podcast._id
+                        if (userId) {
+                            listenLink += '&id=' + userId
+                        }
+                        renderPodcast(podcast.title,
+                            currentUser.firstName + ' ' + currentUser.lastName,
+                            podcast.DOI,
+                            podcast.publishedDate,
+                            listenLink,
+                            $("#podcasts"));
+                    });
+                })
+            }
+            else {
+                $("#podcasts").append(`<h2> My Podcasts</h2>`)
+                $("#toggle-podcasts").text("Liked Podcasts")
+                $.getJSON(backend + '/podcasts/byAuthor/' + currentUser._id, function (data) {
+                    console.log(data);
+                    data.forEach(podcast => {
+                        let listenLink = "?podcast=" + podcast._id
+                        if (userId) {
+                            listenLink += '&id=' + userId
+                        }
+                        renderPodcast(podcast.title,
+                            currentUser.firstName + ' ' + currentUser.lastName,
+                            podcast.DOI,
+                            podcast.publishedDate,
+                            listenLink,
+                            $("#podcasts"));
+                    });
+                })
+            }
+            showLikedPodcasts = !showLikedPodcasts;
         })
 
         updateLoginButtons(userId);

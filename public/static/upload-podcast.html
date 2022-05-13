@@ -58,6 +58,10 @@
                 </datalist>
                 <label for="category">Category</label>
             </div>
+            <label for="Description" style="opacity:.6;">Description</label>
+            <div class="form-floating py-1">
+                <textarea id="Description" cols=" 28" rows="5"></textarea>
+            </div>
             <input type="file" class="form-control mb-3" id="url" accept="audio/mp3,audio/mp4">
 
             <p id="DoiAlreadyExists" class="hidden text-danger vaidationMessage">A podcast for this document already
@@ -66,7 +70,7 @@
             <button id="submit" class="w-100 btn btn-lg btn-primary" type="button">Submit
                 Podcast</button>
         </form>
-        <a id="home" class="button w-50 btn btn-md btn-primary my-2" href="./index.html">Back to Home</a>
+        <a id="home" class="button w-50 btn btn-md btn-primary my-2" href="../">Back to Home</a>
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2021</p>
     </main>
     <script src="/js/shared"></script>
@@ -104,7 +108,7 @@
                     "keywords": $("#keywords").val(),
                     "url": $("#url").val(),
                     "category": $("#category").val(),
-                    "manuscript": $("#manuscript").val()
+                    "description": $("#Description").val()
                 }
 
                 $.ajax({
@@ -121,17 +125,15 @@
                     }
                     //Wait until call to api is complete then redirect to home page
                 }).then(() => {
-                    window.location.replace("../?id" + userId);
+                    window.location.replace("../?id=" + userId);
                 });
             }
         })
 
-
-
         // user cant upload if not signed in
         function checkSignIn() {
             if (!userId) {
-                window.location.replace("./login.html");
+                window.location.replace("../auth/signin");
             }
         }
     </script>

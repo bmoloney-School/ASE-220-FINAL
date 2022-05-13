@@ -27,7 +27,7 @@
             class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
             <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
                 <li><a href="./" class="nav-link px-2 link-secondary">Home</a></li>
-                <li><a href="./account/settings" class="nav-link px-2 link-dark">User Information</a></li>
+                <li><a href="./account" class="nav-link px-2 link-dark">User Information</a></li>
                 <li><a href="./pages/rules" class="nav-link px-2 link-dark">Rules</a></li>
                 <li><a href="./pages/about" class="nav-link px-2 link-dark">About</a></li>
             </ul>
@@ -86,6 +86,7 @@
     </footer>
     <script src="/js/shared"></script>
     <script>
+        let podcasts = [];
 
         let currentFilters = {
             year: "",
@@ -103,7 +104,7 @@
                 <div class="card w-75 my-4">
                     <h5 class="card-header">${title}</h5>
                     <div class="card-body container align-content-center">
-                        <a href="./author.html?author=${authorId}&id=${userId}"><h5 class="card-title">Author: ${author}</h5><a/>
+                        <a href="./author?author=${authorId}&id=${userId}"><h5 class="card-title">Author: ${author}</h5><a/>
                         <p class="card-text">DOI:  ${doi}</p>
                         <p class="card-text">Date:  ${date}</p>
                         <p class="card-text">Category:  ${category}</p>
@@ -140,8 +141,26 @@
                     }
                     //Wait until call to api is complete then redirect to login page
                 })
-            })
-            refeshPodcasts()
+            }).then(refeshPodcasts())
+
+        }
+
+        function addPodcasts(FilteredPodcasts) {
+            newPodcastArr = []
+            if (podcasts.length > 0) {
+                for (i = 0; i < podcasts.length; i++) {
+                    for (j = 0; j < FilteredPodcasts.length; j++) {
+                        if (podcasts[i]._id == FilteredPodcasts[j]._id) {
+                            newPodcastArr.push(FilteredPodcasts[j])
+                        }
+                    }
+                }
+                podcasts = newPodcastArr;
+            }
+            else {
+                podcasts = FilteredPodcasts
+            }
+
         }
 
         function updateFilters() {
@@ -156,64 +175,78 @@
             let parent = $("#podcastHolder").append(`<hr/><h1 class="h2">${headerText}</h1>`)
         }
 
+        function renderPodcasts() {
+            podcasts.sort((a, b) => {
+                if (a.category != b.category) {
+                    return a.category > b.category
+                }
+                else {
+                    return a.modifiedDate > b.modifiedDate
+                }
+            })
+            for (i = 0; i < podcasts.length; i++) {
+                let podcast = podcasts[i]
+                if (podcast.authorId) {
+                    $.getJSON(backend + '/users/byId/' + podcast.authorId, function (author) {
+                        let listenLink = "./podcasts/listen?podcast=" + podcast._id
+                        if (userId) {
+                            listenLink += '&id=' + userId
+                        }
+                        renderPodcast(podcast.title,
+                            author.firstName + ' ' + author.lastName,
+                            podcast.authorId,
+                            podcast.DOI,
+                            stripTime(podcast.publishedDate),
+                            podcast.category.replace('-', ' '),
+                            listenLink,
+                            $("#podcastHolder"), podcast._id, podcast.likes)
+                    });
+                }
+            }
+        }
+
+        // I hate how much of a mess this is but cannot think of a better way to do it
         function refeshPodcasts() {
             $("#podcastHolder").html("")
-            let podcasts = [];
-            let params = ""
+
             let lastCategory = "";
+            let callsToMake = []
             let authorId = ""
             if (currentFilters.doi != "") {
-                params += "/doi/" + currentFilters.doi;
+                callsToMake.push(backend + '/search/doi/' + currentFilters.doi)
             }
             if (currentFilters.year != "") {
-                params += "/year/" + currentFilters.year
-            }
-            if (currentFilters.category != "") {
-                params += "/category/" + currentFilters.category
+                callsToMake.push(backend + '/search/year/' + currentFilters.year)
             }
             if (currentFilters.author != "") {
-                let name = currentFilters.author.replace(' ', '-')
-                $.getJSON(backend + '/user/name/' + name, function (user) { })
-                    .then((user) => {
-                        if (!user.message) {
-                            authorId = user._id;
-                        }
-                        else authorId = "-1";
-                        console.log(user)
-                    });
-                params = params + "/author/" + authorId;
+                let name = currentFilters.author.replace(' ', '+')
+                callsToMake.push(backend + '/search/author/' + currentFilters.author)
             }
             if (currentFilters.keyword) {
-                //TODO
+                callsToMake.push(backend + '/search/keyword/' + currentFilters.keyword)
             }
-            console.log(params)
-            $.getJSON(backend + '/' + params, function (data) {
-                data.forEach(podcast => {
-                    if (podcast.authorId) {
-                        $.getJSON(backend + '/users/byId/' + podcast.authorId, function (author) {
-
-                        }).then((author) => {
-                            let listenLink = "./podcasts/listen?podcast=" + podcast._id
-                            if (userId) {
-                                listenLink + '&id=' + userId
-                            }
-                            renderPodcast(podcast.title,
-                                author.firstName + ' ' + author.lastName,
-                                podcast.authorId,
-                                podcast.DOI,
-                                stripTime(podcast.publishedDate),
-                                podcast.category.replace('-', ' '),
-                                listenLink,
-                                $("#podcastHolder"), podcast._id, podcast.likes)
-                        });
+            for (i = 0; i < callsToMake.length; i++) {
+                $.getJSON(callsToMake[i], function (data) {
+                    addPodcasts(data)
+                }).then(() => {
+                    if (i == callsToMake.length) {
+                        renderPodcasts()
                     }
+                })
+            }
 
+
+            //Call to make if there are NO filters set
+            if (callsToMake.length == 0) {
+                $.getJSON(backend + '/', function (data) {
+                    podcasts = data
+                    renderPodcasts()
                 });
-
-            })
+            }
         }
 
         $(document).on('click', '#filter > button', () => {
+            podcasts = []
             updateFilters()
             refeshPodcasts()
         });
