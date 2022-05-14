@@ -117,6 +117,7 @@
                     if (userId) {
                         listenLink += '&id=' + userId
                     }
+                    $.getJSON
                     renderPodcast(podcast.title,
                         user.firstName + ' ' + user.lastName,
                         podcast.DOI,
@@ -126,6 +127,24 @@
                 });
             })
 
+        })
+
+        $(document).on('click', '.delete', () => {
+            let title = $('')
+            $.ajax({
+                url: backend + '/podcast/' + title.strip(' ').join('+'),
+                type: 'DELETE',
+                contentType: "application/json; charset=utf-8",
+                success: function (response, status, xhr) {
+                    console.log(response, status);
+                    if (!response.error) {
+                        window.alert('This podcast was deleted')
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            })
         })
 
         $(document).on('click', '#toggle-podcasts', () => {
@@ -140,12 +159,14 @@
                         if (userId) {
                             listenLink += '&id=' + userId
                         }
-                        renderPodcast(podcast.title,
-                            currentUser.firstName + ' ' + currentUser.lastName,
-                            podcast.DOI,
-                            podcast.publishedDate,
-                            listenLink,
-                            $("#podcasts"));
+                        $.getJSON(backend + '/users/byId/' + podcast.authorId, function (author) {
+                            renderPodcast(podcast.title,
+                                author.firstName + ' ' + author.lastName,
+                                podcast.DOI,
+                                podcast.publishedDate,
+                                listenLink,
+                                $("#podcasts"));
+                        })
                     });
                 })
             }

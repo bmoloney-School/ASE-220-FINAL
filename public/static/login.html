@@ -58,6 +58,8 @@
                 },
                 error: function (error) {
                     console.log(error);
+                    $(".form-floating > input").addClass("border border-danger rounded");
+                    $('#InvalidLogin').removeClass("hidden");
                 }
                 //Wait until call to api is complete then redirect to login page
             }).then((data) => {
@@ -66,7 +68,6 @@
                     window.location.replace("../?id=" + data._id);
                 }
                 else {
-
                     $(".form-floating > input").addClass("border border-danger rounded");
                     $('#InvalidLogin').removeClass("hidden");
                 }
